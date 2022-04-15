@@ -1,0 +1,27 @@
+## COMMAND syntax - ansible-playbook -i <PATH>/hosts -e "UID=****" -e "DOCKER_PASS=******" -e -e "EMAIL=*****" "IMG_NAME=******" create-docker-container.yaml
+## EXAMPLE - ansible-playbook -i <PATH>/hosts -e "UID=abaritrab" -e "DOCKER_PASS=A***@85" -e "EMAIL=ab.aritrab@gmail.com" -e "IMG_NAME=hello_world" create-docker-container.yaml
+---
+ - hosts: webserver
+   become: true
+   tasks:
+    - name: Log into DockerHub
+      docker_login:
+        username: "{{UID}}"
+        password: "{{DOCKER_PASS}}"
+        email: "{{EMAIL}}"
+
+    - name: stop previous version docker
+      shell: docker stop "{{IMG_NAME}}"
+      ignore_errors: yes
+
+    - name: remove stopped container
+      shell: docker rm -f "{{IMG_NAME}}"
+      ignore_errors: yes
+
+    - name: remove docker images
+      shell: docker image rm -f "{{UID}}"/"{{IMG_NAME}}"
+      ignore_errors: yes
+
+    - name: create docker image
+      shell: docker run -d --name "{{IMG_NAME}}" -p 8090:8080 "{{UID}}"/"{{IMG_NAME}}"
+
